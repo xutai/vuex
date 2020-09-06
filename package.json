@@ -1,0 +1,29 @@
+{
+  "name": "vuex",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xutai/vuex.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xutai/vuex/issues"
+  },
+  "homepage": "https://github.com/xutai/vuex#readme",
+  "devDependencies": {
+    "vite": "^1.0.0-rc.4",
+    "vuepress": "^1.5.4"
+  }
+}
