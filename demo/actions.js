@@ -1,101 +1,132 @@
-
-
-const types = {
-    CHECKOUT_REQUEST: 'CHECKOUT_REQUEST'
+import * as types from './mutation-types.js'
+const { mapState, mapActions } = Vuex
+const shop = {
+    byProducts(products, handleSuccess, handleFailure) {
+        if (
+            Math.floor(Math.random() * 10) < 5
+        ) {
+            handleSuccess()
+        } else {
+            handleFailure()
+        }
+    }
 }
-
-
-const store = new Vuex.Store({
+function getData() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve({
+                amount: 1000
+            })
+        }, 1000)
+    })
+}
+export const actions = {
     state: {
-        count: 0
+        cart: {
+            added: ['vue', 'react']
+        }
     },
     mutations: {
-        increment (state) {
-            state.count++
+        CHECKOUT_REQUEST(state, payload) {
+            state.cart.added = []
         },
-        incrementByPayload (state, payload) {
-            state.count += payload.amount
+        CHECKOUT_SUCCESS(state) {
+            console.info('SUCCESS')
         },
-        incrementByObject (state, payload) {
-            state.count += payload.amount
+        CHECKOUT_FAILURE(state, payload) {
+            console.info('FAILURE')
+            state.cart.added = ['vuex']
         }
     },
     actions: {
-        /*
-        increment (context) {
-            context.commit('increment')
+        increment({ commit }) {
+            commit('increment')
+        },
+        async incrementTriple ({ commit, dispatch }) {
+            await dispatch('increment')
+            commit('incrementWithPayloadObject',  await getData())
+        },
+        incrementPlus({ commit, dispatch }) {
+            return dispatch('increment').then(() => {
+                commit('increment')
+            })
+        },
+        incrementAsyncPayload({ commit }, payload) {
+            setTimeout(() => {
+                commit('incrementWithPayloadObject', payload)
+            }, 1000)
+        },
+        incrementAsyncObject({ commit }, payload) {
+            return new Promise((resolve, rejct) => {
+                setTimeout(() => {
+                    commit({
+                        type: 'incrementObjectStyle',
+                        amount: payload.amount
+                    })
+                    resolve()
+                }, 1000)
+            })
+        },
+
+        checkout({ commit, state }, products) {
+            const savedCartItem = [...state.cart.added]
+            commit(types.CHECKOUT_REQUEST)
+            shop.byProducts(
+                products,
+                () => commit(types.CHECKOUT_SUCCESS),
+                () => commit(types.CHECKOUT_FAILURE)
+            )
         }
-        */
-       increment ({ commit }) {
-           commit('increment')
-       },
-       incrementAsyncPayload( { commit }, payload ) {
-           setTimeout(() => {
-               commit('incrementByPayload', payload)
-           }, 1000)
-       },
-       incrementAsyncObject ( { commit }, payload ) {
-           setTimeout(() => {
-               commit({
-                   type: 'incrementByObject',
-                   amount: payload.amount
-               })
-           })
-       }
-    }
-})
+    },
+    components: {
+        Cart: {
+            computed: {
+                ...mapState(['cart'])
 
-
-const cart = {
-    template: `
+            },
+            template: `
     <div>
-        <h3>cart</h3>
-        <p>count: {{ count }}</p>
-        <button @click="dispatchIncrement">dispatchIncrement</button>
+        <h3>actions</h3>
+        <button @click="increment">dispatchIncrement</button>
+        <button @click="incrementPlus">dispatchincrementPlus</button>
         <button @click="dispatchIncrementAsyncPayload">dispatchIncrementAsyncPayload</button>
         <button @click="dispatchIncrementAsyncObject">dispaatchIncrementAsyncObject</button>
+        <button @click="incrementTriple">incrementTriple</button>
+        <p>{{ cart.added }}</p>
+        <button @click="buyProducts">buyProducts</button>
     </div>`,
-    computed: {
-        count() { return store.state.count }
-    },
-    methods: {
-        dispatchIncrement() {
-            store.dispatch('increment')
-        },
-        dispatchIncrementAsyncPayload() {
-            store.dispatch('incrementAsyncPayload', {
-                amount: 10
-            })
-        },
-        dispatchIncrementAsyncObject() {
-            store.dispatch({
-                type: 'incrementAsyncObject',
-                amount: 8
-            })
+            methods: {
+                ...mapActions([
+                    'increment',
+                    'incrementTriple'
+                ]),
+                ...mapActions({
+                    dispatchIncrementAsyncPayload: {
+                        type: 'incrementAsyncPayload',
+                        amount: 10
+                    }
+                }),
+                incrementPlus() {
+                    this.$store.dispatch('incrementPlus')
+                    .then(() => {
+                        console.dir('discrement plus done!')
+                    })
+                },
+                dispatchIncrementAsyncObject() {
+                    this.$store.dispatch({
+                        type: 'incrementAsyncObject',
+                        amount: 8
+                    }).then(() => {
+                        console.dir('inc 8!')
+                    })
+                },
+                buyProducts() {
+                    this.$store.dispatch({
+                        type: 'checkout',
+                        payload: this.$store.state.cart.added
+                    })
+                }
+            }
         }
     }
 }
-
-new Vue({
-    el: '#app',
-    template: `
-    <div>
-        <h1>Shopping Cart</h1>
-        <cart />
-    </div>
-    `,
-    components: {
-        cart
-    },
-    data() {
-        return {
-
-        }
-    },
-    methods: {
-
-    },
-    computed: {
-
-    }
-})
